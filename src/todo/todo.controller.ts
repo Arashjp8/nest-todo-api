@@ -8,6 +8,7 @@ import {
   Delete,
   ValidationPipe,
   NotFoundException,
+  InternalServerErrorException,
 } from "@nestjs/common";
 import { TodoService } from "./todo.service";
 import { CreateTodoDto } from "./dto/create-todo.dto";
@@ -18,31 +19,47 @@ export class TodoController {
   constructor(private readonly todoService: TodoService) {}
 
   @Post()
-  create(@Body(new ValidationPipe()) createTodoDto: CreateTodoDto) {
-    return this.todoService.create(createTodoDto);
+  async create(@Body(new ValidationPipe()) createTodoDto: CreateTodoDto) {
+    try {
+      return await this.todoService.create(createTodoDto);
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
   @Get()
   findAll() {
-    return this.todoService.findAll();
+    try {
+      return this.todoService.findAll();
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
   @Get(":id")
   findOne(@Param("id") id: string) {
     try {
       return this.todoService.findOne(id);
-    } catch {
-      throw new NotFoundException();
+    } catch (error) {
+      throw new NotFoundException(error.message);
     }
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateTodoDto: UpdateTodoDto) {
-    return this.todoService.update(+id, updateTodoDto);
+  async update(@Param("id") id: string, @Body() updateTodoDto: UpdateTodoDto) {
+    try {
+      return await this.todoService.update(id, updateTodoDto);
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.todoService.remove(+id);
+  async remove(@Param("id") id: string) {
+    try {
+      return await this.todoService.remove(id);
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 }
