@@ -16,7 +16,8 @@ import { UpdateTodoDto } from "./dto/update-todo.dto";
 
 @Controller("todo")
 export class TodoController {
-  constructor(private readonly todoService: TodoService) {}
+  // prettier-ignore
+  constructor(private readonly todoService: TodoService) { }
 
   @Post()
   async create(@Body(new ValidationPipe()) createTodoDto: CreateTodoDto) {
@@ -28,18 +29,18 @@ export class TodoController {
   }
 
   @Get()
-  findAll() {
+  async findAll() {
     try {
-      return this.todoService.findAll();
+      return await this.todoService.findAll();
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
+  async findOne(@Param("id") id: string) {
     try {
-      return this.todoService.findOne(id);
+      return await this.todoService.findOne(id);
     } catch (error) {
       throw new NotFoundException(error.message);
     }
