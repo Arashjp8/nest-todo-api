@@ -47,10 +47,16 @@ export class TodoController {
   }
 
   @Patch(":id")
-  async update(@Param("id") id: string, @Body() updateTodoDto: UpdateTodoDto) {
+  async update(
+    @Param("id") id: string,
+    @Body(new ValidationPipe()) updateTodoDto: UpdateTodoDto,
+  ) {
     try {
       return await this.todoService.updateTodo(id, updateTodoDto);
     } catch (error) {
+      if (error.message.includes("not found")) {
+        throw new NotFoundException(`Todo with id ${id} not found.`);
+      }
       throw new InternalServerErrorException(error.message);
     }
   }

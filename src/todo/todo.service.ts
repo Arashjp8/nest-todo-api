@@ -1,15 +1,14 @@
 import { Injectable } from "@nestjs/common";
+import { DbService } from "src/db/db.service";
 import { v4 as uuidv4 } from "uuid";
 import { CreateTodoDto } from "./dto/create-todo.dto";
 import { UpdateTodoDto } from "./dto/update-todo.dto";
 import { Todo } from "./entities/todo.entity";
-import { DbService } from "src/db/db.service";
 
 @Injectable()
 export class TodoService {
   // prettier-ignore
   constructor(private readonly dbService: DbService) { }
-  private todos: Todo[] = [];
 
   async findAllTodos() {
     const todos = await this.dbService.readDataFromDb();
@@ -18,13 +17,16 @@ export class TodoService {
   }
 
   async createNewTodo(createTodoDto: CreateTodoDto) {
+    const todos = await this.dbService.readDataFromDb();
     const newTodo: Todo = {
       ...createTodoDto,
       id: uuidv4(),
       created_at: new Date(),
       updated_at: new Date(),
     };
-    await this.dbService.writeDataToDb(newTodo);
+
+    todos.push(newTodo);
+    await this.dbService.writeDataToDb(todos);
     return { newTodo };
   }
 
@@ -52,6 +54,7 @@ export class TodoService {
       updated_at: new Date(),
     };
 
+    await this.dbService.writeDataToDb(todos);
     return todos[index];
   }
 
