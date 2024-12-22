@@ -11,7 +11,7 @@ export class DbService {
     this.dbFilePath = path.join(__dirname, "../../src/db/db.json");
   }
 
-  async writeDataToDb(data: Todo[]): Promise<void> {
+  async writeDataToDb(data: Todo[] | Todo): Promise<void> {
     try {
       try {
         await fs.access(this.dbFilePath);
@@ -24,18 +24,23 @@ export class DbService {
       const currentData = await fs.readFile(this.dbFilePath, "utf-8");
       const parsedData = JSON.parse(currentData);
 
-      console.log("currentData", parsedData);
+      const dataToWrite = Array.isArray(data) ? data : [data];
 
       const updatedData = Array.isArray(parsedData)
-        ? [...parsedData, ...data]
-        : [...data];
-
-      console.log("updatedData", updatedData);
+        ? [...parsedData, ...dataToWrite]
+        : [...dataToWrite];
 
       await fs.writeFile(this.dbFilePath, JSON.stringify(updatedData, null, 2));
       console.log("Data updated in db.json");
     } catch (err) {
       console.error("Error writing data to db.json:", err);
     }
+  }
+
+  async readDataFromDb(): Promise<Todo[]> {
+    const data = await fs.readFile(this.dbFilePath, "utf-8");
+    const parsedData = JSON.parse(data);
+
+    return parsedData;
   }
 }

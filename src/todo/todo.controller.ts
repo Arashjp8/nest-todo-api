@@ -22,7 +22,7 @@ export class TodoController {
   @Post()
   async create(@Body(new ValidationPipe()) createTodoDto: CreateTodoDto) {
     try {
-      return await this.todoService.create(createTodoDto);
+      return await this.todoService.createNewTodo(createTodoDto);
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
@@ -31,7 +31,7 @@ export class TodoController {
   @Get()
   async findAll() {
     try {
-      return await this.todoService.findAll();
+      return await this.todoService.findAllTodos();
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
@@ -40,7 +40,7 @@ export class TodoController {
   @Get(":id")
   async findOne(@Param("id") id: string) {
     try {
-      return await this.todoService.findOne(id);
+      return await this.todoService.findOneTodo(id);
     } catch (error) {
       throw new NotFoundException(error.message);
     }
@@ -49,7 +49,7 @@ export class TodoController {
   @Patch(":id")
   async update(@Param("id") id: string, @Body() updateTodoDto: UpdateTodoDto) {
     try {
-      return await this.todoService.update(id, updateTodoDto);
+      return await this.todoService.updateTodo(id, updateTodoDto);
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
@@ -58,7 +58,7 @@ export class TodoController {
   @Delete(":id")
   async remove(@Param("id") id: string) {
     try {
-      return await this.todoService.remove(id);
+      return await this.todoService.removeTodo(id);
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
