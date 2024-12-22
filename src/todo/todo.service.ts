@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { DbService } from "src/db/db.service";
 import { v4 as uuidv4 } from "uuid";
 import { CreateTodoDto } from "./dto/create-todo.dto";
@@ -27,7 +27,11 @@ export class TodoService {
 
     todos.push(newTodo);
     await this.dbService.writeDataToDb(todos);
-    return { newTodo };
+
+    return {
+      message: `Todo has been successfully created.`,
+      newTodo,
+    };
   }
 
   async findOneTodo(id: string) {
@@ -35,9 +39,13 @@ export class TodoService {
     const foundTodo = todos.find((todo) => todo.id === id);
 
     if (!foundTodo) {
-      throw new Error(`todo with id: ${id} not found.`);
+      throw new NotFoundException(`Todo with id: ${id} not found.`);
     }
-    return foundTodo;
+
+    return {
+      message: `Todo with id: ${id} found successfully.`,
+      foundTodo,
+    };
   }
 
   async updateTodo(id: string, updateTodoDto: UpdateTodoDto) {
@@ -45,7 +53,7 @@ export class TodoService {
     const index = todos.findIndex((todo) => todo.id === id);
 
     if (index === -1) {
-      throw new Error(`todo with id: ${id} not found.`);
+      throw new NotFoundException(`Todo with id: ${id} not found.`);
     }
 
     todos[index] = {
@@ -55,7 +63,11 @@ export class TodoService {
     };
 
     await this.dbService.writeDataToDb(todos);
-    return todos[index];
+
+    return {
+      message: `Todo with id: ${id} has been updated successfully.`,
+      modifiedTodo: todos[index],
+    };
   }
 
   async removeTodo(id: string) {
@@ -63,10 +75,15 @@ export class TodoService {
     const index = todos.findIndex((todo) => todo.id === id);
 
     if (index === -1) {
-      throw new Error(`todo with id: ${id} not found.`);
+      throw new NotFoundException(`Todo with id: ${id} not found.`);
     }
 
-    const removedTodo = todos.splice(index, 1);
-    return removedTodo;
+    const [removedTodo] = todos.splice(index, 1);
+    await this.dbService.writeDataToDb(todos);
+
+    return {
+      message: `Todo with id: ${id} has been deleted successfully.`,
+      removedTodo,
+    };
   }
 }

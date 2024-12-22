@@ -1,18 +1,19 @@
 import {
-  Controller,
-  Get,
-  Post,
+  BadRequestException,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  ValidationPipe,
-  NotFoundException,
+  Get,
   InternalServerErrorException,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  ValidationPipe,
 } from "@nestjs/common";
-import { TodoService } from "./todo.service";
 import { CreateTodoDto } from "./dto/create-todo.dto";
 import { UpdateTodoDto } from "./dto/update-todo.dto";
+import { TodoService } from "./todo.service";
 
 @Controller("todo")
 export class TodoController {
@@ -21,6 +22,10 @@ export class TodoController {
 
   @Post()
   async create(@Body(new ValidationPipe()) createTodoDto: CreateTodoDto) {
+    if (Object.keys(createTodoDto).length === 0) {
+      throw new BadRequestException("Request body cannot be empty");
+    }
+
     try {
       return await this.todoService.createNewTodo(createTodoDto);
     } catch (error) {
@@ -51,6 +56,10 @@ export class TodoController {
     @Param("id") id: string,
     @Body(new ValidationPipe()) updateTodoDto: UpdateTodoDto,
   ) {
+    if (Object.keys(updateTodoDto).length === 0) {
+      throw new BadRequestException("Request body cannot be empty");
+    }
+
     try {
       return await this.todoService.updateTodo(id, updateTodoDto);
     } catch (error) {
@@ -66,6 +75,9 @@ export class TodoController {
     try {
       return await this.todoService.removeTodo(id);
     } catch (error) {
+      if (error.message.includes("not found")) {
+        throw new NotFoundException(`Todo with id ${id} not found.`);
+      }
       throw new InternalServerErrorException(error.message);
     }
   }
