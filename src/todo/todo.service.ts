@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { DbService } from "src/db/db.service";
 import { v4 as uuidv4 } from "uuid";
 import { CreateTodoDto } from "./dto/create-todo.dto";
@@ -12,11 +16,14 @@ export class TodoService {
 
   async findAllTodos() {
     const todos = await this.dbService.readDataFromDb();
-    console.log("\n **TODOS** \n", todos);
     return todos;
   }
 
   async createNewTodo(createTodoDto: CreateTodoDto) {
+    if (Object.keys(createTodoDto).length === 0) {
+      throw new BadRequestException("Request body cannot be empty");
+    }
+
     const todos = await this.dbService.readDataFromDb();
     const newTodo: Todo = {
       ...createTodoDto,
@@ -49,6 +56,10 @@ export class TodoService {
   }
 
   async updateTodo(id: string, updateTodoDto: UpdateTodoDto) {
+    if (Object.keys(updateTodoDto).length === 0) {
+      throw new BadRequestException("Request body cannot be empty");
+    }
+
     const todos = await this.dbService.readDataFromDb();
     const index = todos.findIndex((todo) => todo.id === id);
 
