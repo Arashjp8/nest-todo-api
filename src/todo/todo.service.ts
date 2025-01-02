@@ -3,20 +3,20 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { DbService } from "src/db/db.service";
+import { Repository } from "typeorm";
 import { v4 as uuidv4 } from "uuid";
 import { CreateTodoDto } from "./dto/create-todo.dto";
 import { UpdateTodoDto } from "./dto/update-todo.dto";
 import { Todo } from "./entities/todo.entity";
+import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
 export class TodoService {
   // prettier-ignore
-  constructor(private readonly dbService: DbService) { }
+  constructor(@InjectRepository(Todo) private todoRepository: Repository<Todo>) { }
 
-  async findAllTodos() {
-    const todos = await this.dbService.readDataFromDb();
-    return todos;
+  async findAllTodos(): Promise<Todo[]> {
+    return await this.todoRepository.find();
   }
 
   async createNewTodo(createTodoDto: CreateTodoDto) {
@@ -24,16 +24,14 @@ export class TodoService {
       throw new BadRequestException("Request body cannot be empty");
     }
 
-    const todos = await this.dbService.readDataFromDb();
-    const newTodo: Todo = {
+    const newTodo = this.todoRepository.create({
       ...createTodoDto,
       id: uuidv4(),
       created_at: new Date(),
       updated_at: new Date(),
-    };
+    });
 
-    todos.push(newTodo);
-    await this.dbService.writeDataToDb(todos);
+    await this.todoRepository.save(newTodo);
 
     return {
       message: `Todo has been successfully created.`,
@@ -42,8 +40,7 @@ export class TodoService {
   }
 
   async findOneTodo(id: string) {
-    const todos = await this.dbService.readDataFromDb();
-    const foundTodo = todos.find((todo) => todo.id === id);
+    const foundTodo = await this.todoRepository.findOne({ where: { id } });
 
     if (!foundTodo) {
       throw new NotFoundException(`Todo with id: ${id} not found.`);
@@ -60,41 +57,62 @@ export class TodoService {
       throw new BadRequestException("Request body cannot be empty");
     }
 
-    const todos = await this.dbService.readDataFromDb();
-    const index = todos.findIndex((todo) => todo.id === id);
+    //const todos = await this.dbService.readDataFromDb();
+    //const index = todos.findIndex((todo) => todo.id === id);
 
-    if (index === -1) {
+    //if (index === -1) {
+    //  throw new NotFoundException(`Todo with id: ${id} not found.`);
+    //}
+    //
+    //todos[index] = {
+    //  ...todos[index],
+    //  ...updateTodoDto,
+    //  updated_at: new Date(),
+    //};
+    //
+    //await this.dbService.writeDataToDb(todos);
+
+    const existingTodo = await this.todoRepository.findOne({ where: { id } });
+
+    if (!existingTodo) {
       throw new NotFoundException(`Todo with id: ${id} not found.`);
     }
 
-    todos[index] = {
-      ...todos[index],
+    await this.todoRepository.update(id, {
       ...updateTodoDto,
       updated_at: new Date(),
-    };
+    });
 
-    await this.dbService.writeDataToDb(todos);
+    const modifiedTodo = await this.todoRepository.findOne({ where: { id } });
 
     return {
       message: `Todo with id: ${id} has been updated successfully.`,
-      modifiedTodo: todos[index],
+      modifiedTodo: modifiedTodo,
     };
   }
 
   async removeTodo(id: string) {
-    const todos = await this.dbService.readDataFromDb();
-    const index = todos.findIndex((todo) => todo.id === id);
+    //const todos = await this.dbService.readDataFromDb();
+    //const index = todos.findIndex((todo) => todo.id === id);
 
-    if (index === -1) {
+    //if (index === -1) {
+    //  throw new NotFoundException(`Todo with id: ${id} not found.`);
+    //}
+
+    //const [removedTodo] = todos.splice(index, 1);
+    //await this.dbService.writeDataToDb(todos);
+
+    const existingTodo = this.todoRepository.findOne({ where: { id } });
+
+    if (!existingTodo) {
       throw new NotFoundException(`Todo with id: ${id} not found.`);
     }
 
-    const [removedTodo] = todos.splice(index, 1);
-    await this.dbService.writeDataToDb(todos);
+    await this.todoRepository.delete(id);
 
     return {
       message: `Todo with id: ${id} has been deleted successfully.`,
-      removedTodo,
+      existingTodo,
     };
   }
 }
