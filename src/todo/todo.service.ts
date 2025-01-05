@@ -3,12 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { v4 as uuidv4 } from "uuid";
 import { CreateTodoDto } from "./dto/create-todo.dto";
 import { UpdateTodoDto } from "./dto/update-todo.dto";
 import { Todo } from "./entities/todo.entity";
-import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
 export class TodoService {
@@ -26,7 +25,6 @@ export class TodoService {
 
     const newTodo = this.todoRepository.create({
       ...createTodoDto,
-      id: uuidv4(),
       created_at: new Date(),
       updated_at: new Date(),
     });
@@ -57,21 +55,6 @@ export class TodoService {
       throw new BadRequestException("Request body cannot be empty");
     }
 
-    //const todos = await this.dbService.readDataFromDb();
-    //const index = todos.findIndex((todo) => todo.id === id);
-
-    //if (index === -1) {
-    //  throw new NotFoundException(`Todo with id: ${id} not found.`);
-    //}
-    //
-    //todos[index] = {
-    //  ...todos[index],
-    //  ...updateTodoDto,
-    //  updated_at: new Date(),
-    //};
-    //
-    //await this.dbService.writeDataToDb(todos);
-
     const existingTodo = await this.todoRepository.findOne({ where: { id } });
 
     if (!existingTodo) {
@@ -92,16 +75,6 @@ export class TodoService {
   }
 
   async removeTodo(id: string) {
-    //const todos = await this.dbService.readDataFromDb();
-    //const index = todos.findIndex((todo) => todo.id === id);
-
-    //if (index === -1) {
-    //  throw new NotFoundException(`Todo with id: ${id} not found.`);
-    //}
-
-    //const [removedTodo] = todos.splice(index, 1);
-    //await this.dbService.writeDataToDb(todos);
-
     const existingTodo = this.todoRepository.findOne({ where: { id } });
 
     if (!existingTodo) {
