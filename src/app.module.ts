@@ -4,26 +4,30 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { Todo } from "./todo/entities/todo.entity";
 import { TodoModule } from "./todo/todo.module";
+import { AuthModule } from "./auth/auth.module";
+import { UsersModule } from "./users/users.module";
 
 @Module({
-  imports: [
-    TypeOrmModule.forRoot({
-      type: "mariadb",
-      host: "localhost",
-      port: 3306,
-      username: "root",
-      password: "",
-      database: "test",
-      entities: [Todo],
-      // TODO:
-      // WARNING: change to false in production
-      synchronize: true,
-      retryAttempts: 3,
-      retryDelay: 3000,
-    }),
-    TodoModule,
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+    imports: [
+        TypeOrmModule.forRoot({
+            type: "mariadb",
+            host: "localhost",
+            port: 3306,
+            username: "root",
+            password: "",
+            database: "test",
+            entities: [Todo],
+            // TODO:
+            // WARNING: change to false in production
+            synchronize: true,
+            retryAttempts: 3,
+            retryDelay: 3000,
+        }),
+        TodoModule,
+        AuthModule,
+        UsersModule,
+    ],
+    controllers: [AppController],
+    providers: [AppService],
 })
 export class AppModule {}

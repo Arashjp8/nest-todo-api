@@ -1,0 +1,8 @@
+name: get-todos
+url: http://localhost:3000/todo
+body:
+  content: ''
+  content_type: application/json
+headers:
+- name: content-type
+  value: application/json

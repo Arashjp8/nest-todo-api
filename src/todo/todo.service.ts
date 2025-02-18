@@ -1,7 +1,7 @@
 import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
+    BadRequestException,
+    Injectable,
+    NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -11,81 +11,78 @@ import { Todo } from "./entities/todo.entity";
 
 @Injectable()
 export class TodoService {
-  // prettier-ignore
-  constructor(@InjectRepository(Todo) private todoRepository: Repository<Todo>) { }
+    // prettier-ignore
+    constructor(@InjectRepository(Todo) private todoRepository: Repository<Todo>) { }
 
-  async findAllTodos(): Promise<Todo[]> {
-    return await this.todoRepository.find();
-  }
-
-  async createNewTodo(createTodoDto: CreateTodoDto) {
-    if (Object.keys(createTodoDto).length === 0) {
-      throw new BadRequestException("Request body cannot be empty");
+    async findAllTodos(): Promise<Todo[]> {
+        return await this.todoRepository.find();
     }
 
-    const newTodo = this.todoRepository.create({
-      ...createTodoDto,
-      created_at: new Date(),
-      updated_at: new Date(),
-    });
+    async createNewTodo(createTodoDto: CreateTodoDto) {
+        if (Object.keys(createTodoDto).length === 0) {
+            throw new BadRequestException("Request body cannot be empty");
+        }
 
-    await this.todoRepository.save(newTodo);
+        const newTodo = this.todoRepository.create({
+            ...createTodoDto,
+            created_at: new Date(),
+            updated_at: new Date(),
+        });
 
-    return {
-      message: `Todo has been successfully created.`,
-      newTodo,
-    };
-  }
+        await this.todoRepository.save(newTodo);
 
-  async findOneTodo(id: string) {
-    const foundTodo = await this.todoRepository.findOne({ where: { id } });
-
-    if (!foundTodo) {
-      throw new NotFoundException(`Todo with id: ${id} not found.`);
+        return {
+            message: `Todo has been successfully created.`,
+        };
     }
 
-    return {
-      message: `Todo with id: ${id} found successfully.`,
-      foundTodo,
-    };
-  }
+    async findOneTodo(id: string) {
+        const foundTodo = await this.todoRepository.findOne({ where: { id } });
 
-  async updateTodo(id: string, updateTodoDto: UpdateTodoDto) {
-    if (Object.keys(updateTodoDto).length === 0) {
-      throw new BadRequestException("Request body cannot be empty");
+        if (!foundTodo) {
+            throw new NotFoundException(`Todo with id: ${id} not found.`);
+        }
+
+        return {
+            message: `Todo with id: ${id} found successfully.`,
+            foundTodo,
+        };
     }
 
-    const existingTodo = await this.todoRepository.findOne({ where: { id } });
+    async updateTodo(id: string, updateTodoDto: UpdateTodoDto) {
+        if (Object.keys(updateTodoDto).length === 0) {
+            throw new BadRequestException("Request body cannot be empty");
+        }
 
-    if (!existingTodo) {
-      throw new NotFoundException(`Todo with id: ${id} not found.`);
+        const existingTodo = await this.todoRepository.findOne({
+            where: { id },
+        });
+
+        if (!existingTodo) {
+            throw new NotFoundException(`Todo with id: ${id} not found.`);
+        }
+
+        await this.todoRepository.update(id, {
+            ...updateTodoDto,
+            updated_at: new Date(),
+        });
+
+        return {
+            message: `Todo with id: ${id} has been updated successfully.`,
+        };
     }
 
-    await this.todoRepository.update(id, {
-      ...updateTodoDto,
-      updated_at: new Date(),
-    });
+    async removeTodo(id: string) {
+        const existingTodo = this.todoRepository.findOne({ where: { id } });
 
-    const modifiedTodo = await this.todoRepository.findOne({ where: { id } });
+        if (!existingTodo) {
+            throw new NotFoundException(`Todo with id: ${id} not found.`);
+        }
 
-    return {
-      message: `Todo with id: ${id} has been updated successfully.`,
-      modifiedTodo: modifiedTodo,
-    };
-  }
+        await this.todoRepository.delete(id);
 
-  async removeTodo(id: string) {
-    const existingTodo = this.todoRepository.findOne({ where: { id } });
-
-    if (!existingTodo) {
-      throw new NotFoundException(`Todo with id: ${id} not found.`);
+        return {
+            message: `Todo with id: ${id} has been deleted successfully.`,
+        };
     }
-
-    await this.todoRepository.delete(id);
-
-    return {
-      message: `Todo with id: ${id} has been deleted successfully.`,
-      existingTodo,
-    };
-  }
 }
